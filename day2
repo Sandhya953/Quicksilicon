@@ -1,4 +1,4 @@
-module day2 (
+module D_ff (
   input     logic      clk,
   input     logic      reset,
 
@@ -25,3 +25,60 @@ module day2 (
   end
 
 endmodule
+`timescale 1ns/1ps
+
+module tb_D_ff;
+
+  // Testbench signals
+  logic clk;
+  logic reset;
+  logic d_i;
+  logic q_norst_o;
+  logic q_syncrst_o;
+  logic q_asyncrst_o;
+
+  // Instantiate the DUT
+  D_ff uut (
+    .clk(clk),
+    .reset(reset),
+    .d_i(d_i),
+    .q_norst_o(q_norst_o),
+    .q_syncrst_o(q_syncrst_o),
+    .q_asyncrst_o(q_asyncrst_o)
+  );
+
+  // Clock generation: 10ns period
+  initial clk = 0;
+  always #5 clk = ~clk;
+
+  // Stimulus
+  initial begin
+    // Initialize signals
+    reset = 0;
+    d_i = 0;
+
+    // Monitor outputs
+    $monitor($time, " clk=%b reset=%b d_i=%b | q_norst_o=%b q_syncrst_o=%b q_asyncrst_o=%b",
+              clk, reset, d_i, q_norst_o, q_syncrst_o, q_asyncrst_o);
+
+    // Apply stimulus
+    #10 d_i = 1;       // Change input
+    #10 d_i = 0;
+
+    // Apply synchronous reset
+    #10 reset = 1;     // Assert reset
+    #10 reset = 0;     // Deassert reset
+
+    // Apply more data
+    #10 d_i = 1;
+    #10 d_i = 0;
+
+    // Apply asynchronous reset during data change
+    #7 reset = 1;
+    #5 reset = 0;
+
+    #20 $finish;
+  end
+
+endmodule
+

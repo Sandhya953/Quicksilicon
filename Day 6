@@ -1,0 +1,46 @@
+module day6(
+input wire clk,
+input wire reset,
+input wire x_i,      // Serial input
+output wire[3:0] sr_o);
+logic [3:0] sr_ff;
+logic [3:0] nxt_sr;
+always_ff @(posedge clk or posedge reset)
+if (reset)
+   sr_ff <= 4'h0;
+else
+  sr_ff <= nxt_sr;
+assign nxt_sr = {sr_ff[2:0], x_i};
+assign sr_o = sr_ff;
+endmodule
+
+
+TB
+
+module day6_tb ();
+logic  clk;
+logic  reset;
+logic   x_i;
+logic [3:0]  sr_o;
+day6 DAY6 (.*);
+// generate clock
+always begin
+clk = 1'b1;
+#5;
+clk = 1'b0;
+#5;
+end
+// Stimulus
+initial begin
+reset <= 1'b1;
+x_i <= 1'b0;
+@(posedge clk);
+    reset <= 1'b0;
+    @(posedge clk);
+    for (int i=0; i<16; i=i+1) begin
+      x_i <= $random%2;
+      @(posedge clk);
+    end
+    $finish();
+  end
+endmodule

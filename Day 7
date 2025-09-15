@@ -1,0 +1,41 @@
+module lfsr_4bit (
+    input  wire clk,
+    input  wire reset,
+    output wire [3:0] lfsr_o
+);
+reg [3:0] lfsr_reg;
+always @(posedge clk or posedge reset) begin
+if (reset) begin
+    lfsr_reg <= 4'b0001;   // seed (non-zero)
+end 
+else
+begin
+  lfsr_reg <= {lfsr_reg[2:0], lfsr_reg[1] ^ lfsr_reg[3]};
+        end
+    end
+assign lfsr_o = lfsr_reg;
+endmodule
+
+
+
+
+TB
+module tb_lfsr_4bit;
+reg clk;
+reg reset;
+wire [3:0] lfsr_o;
+lfsr_4bit dut (.clk(clk),.reset(reset),.lfsr_o(lfsr_o));
+initial begin
+clk = 0;
+forever #5 clk = ~clk;   // 100MHz clock
+end
+initial begin
+$display("Time\tReset\tLFSR");
+$monitor("%0t\t%b\t%04b", $time, reset, lfsr_o);
+reset = 1;
+#12;    // hold reset for a bit
+reset = 0;
+repeat (20) @(posedge clk);
+$finish;
+end
+endmodule
